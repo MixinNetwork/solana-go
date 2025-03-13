@@ -5,7 +5,7 @@ package default_account_state
 
 import (
 	binary "github.com/gagliardetto/binary"
-	
+	spltoken2022 "github.com/gagliardetto/solana-go/programs/spl_token_2022"
 )
 
 // DefaultAccountState Struct
