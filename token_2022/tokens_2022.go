@@ -356,12 +356,13 @@ func GetTokenMetadata(
 	connection *rpc.Client,
 	mint, programId web3.PublicKey,
 	opts *rpc.GetAccountInfoOpts,
-) (*token_metadata.TokenMetadata, error) {
+) (*token_metadata.TokenMetadata, uint8, error) {
 	mintInfo, err := GetMint(ctx, connection, mint, programId, opts)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return ParseTokenMetadata(mintInfo.TlvData)
+	mt, err := ParseTokenMetadata(mintInfo.TlvData)
+	return mt, mintInfo.Mint.Decimals, err
 }
 
 // ParseTokenMetadata Extension: token_metadata

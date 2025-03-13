@@ -11,10 +11,10 @@ import (
 func TestGetTokenMetadata(t *testing.T) {
 	ctx := context.Background()
 	client := rpc.New(rpc.MainNetBeta_RPC)
-	metadata, err := GetTokenMetadata(ctx, client, solana.MPK("HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC"), solana.Token2022ProgramID, nil)
+	metadata, decimal, err := GetTokenMetadata(ctx, client, solana.MPK("HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC"), solana.Token2022ProgramID, nil)
 	if err != nil {
 		t.Error(err)
 		return
 	}
-	t.Logf("metadata: %+v", metadata)
+	t.Logf("metadata: %+v %d", metadata, decimal)
 }
