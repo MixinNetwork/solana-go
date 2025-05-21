@@ -346,7 +346,7 @@ func (t tokenKit2022) ParseDefaultAccountState(data []byte) (*default_account_st
 }
 
 // ParseTransferFeeConfig Extension: transfer_fee
-func (t tokenKit2022) ParseTransferFeeConfig(data []byte) (*transfer_fee.TransferFeeConfig, error) {
+func ParseTransferFeeConfig(data []byte) (*transfer_fee.TransferFeeConfig, error) {
 	return parseExtension[*transfer_fee.TransferFeeConfig](ExtensionTypeTransferFeeConfig, data)
 }
 
@@ -356,13 +356,14 @@ func GetTokenMetadata(
 	connection *rpc.Client,
 	mint, programId web3.PublicKey,
 	opts *rpc.GetAccountInfoOpts,
-) (*token_metadata.TokenMetadata, uint8, error) {
+) (*token_metadata.TokenMetadata, uint8, *transfer_fee.TransferFeeConfig, error) {
 	mintInfo, err := GetMint(ctx, connection, mint, programId, opts)
 	if err != nil {
-		return nil, 0, err
+		return nil, 0, nil, err
 	}
 	mt, err := ParseTokenMetadata(mintInfo.TlvData)
-	return mt, mintInfo.Mint.Decimals, err
+	fee, _ := ParseTransferFeeConfig(mintInfo.TlvData)
+	return mt, mintInfo.Mint.Decimals, fee, err
 }
 
 // ParseTokenMetadata Extension: token_metadata
