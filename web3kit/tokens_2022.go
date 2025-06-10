@@ -350,8 +350,8 @@ func ParseTransferFeeConfig(data []byte) (*transfer_fee.TransferFeeConfig, error
 	return parseExtension[*transfer_fee.TransferFeeConfig](ExtensionTypeTransferFeeConfig, data)
 }
 
-// GetTokenMetadata Extension: token_metadata
-func GetTokenMetadata(
+// GetToken2022Metadata Extension: token_metadata
+func GetToken2022Metadata(
 	ctx context.Context,
 	connection *rpc.Client,
 	mint, programId web3.PublicKey,
