@@ -34,13 +34,10 @@ func GetTokenMetadata(ctx context.Context, client *rpc.Client, mint string) (*Me
 		if err != nil {
 			return nil, fmt.Errorf("derive metadata address: %w", err)
 		}
-		metaAccountInfo, err := client.GetAccountInfo(ctx, metadataAddress)
+		var meta token_metadata.Metadata
+		err = client.GetAccountDataBorshInto(ctx, metadataAddress, &meta)
 		if err != nil {
 			return nil, fmt.Errorf("metadata address: %w", err)
-		}
-		meta := &token_metadata.Metadata{}
-		if err = meta.UnmarshalWithDecoder(bin.NewBorshDecoder(metaAccountInfo.GetBinary())); err != nil {
-			return nil, fmt.Errorf("unmarshal metadata: %w", err)
 		}
 		return &Metadata{
 			Name:     meta.Data.Name,

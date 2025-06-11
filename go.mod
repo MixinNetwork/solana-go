@@ -6,6 +6,7 @@ require (
 	github.com/donutnomad/solana-web3 v0.0.0-20250313072913-99732fd085a1
 	github.com/gagliardetto/binary v0.8.0
 	github.com/gagliardetto/gofuzz v1.2.2
+	github.com/gagliardetto/metaplex-go v0.2.1
 	github.com/gagliardetto/treeout v0.1.4
 	github.com/google/uuid v1.6.0
 )
@@ -17,7 +18,6 @@ require (
 	github.com/blendle/zapdriver v1.3.1 // indirect
 	github.com/daaku/go.zipexe v1.0.0 // indirect
 	github.com/fsnotify/fsnotify v1.4.7 // indirect
-	github.com/gagliardetto/metaplex-go v0.2.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect

@@ -14,10 +14,13 @@ func TestGetTokenMetadata(t *testing.T) {
 	ctx := context.Background()
 	client := rpc.New(rpc.MainNetBeta_RPC)
 	// FAG
-	metadata, err := GetTokenMetadata(ctx, client, "BUSKVVHpTYSxX1pHqi16MY5n1T3U1RQ4xxr9B3Dcpump")
+	metadata, err := GetTokenMetadata(ctx, client, "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
 	assert.Nil(err)
 	d, _ := json.Marshal(metadata)
 	t.Logf("metadata: %s", d)
+	assert.Equal("USD Coin", metadata.Name)
+	assert.Equal("USDC", metadata.Symbol)
+	assert.Equal(6, metadata.Decimals)
 
 	// ai16z
 	metadata, err = GetTokenMetadata(ctx, client, "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC")
