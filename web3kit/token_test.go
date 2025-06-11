@@ -13,7 +13,7 @@ func TestGetTokenMetadata(t *testing.T) {
 	assert := assert.New(t)
 	ctx := context.Background()
 	client := rpc.New(rpc.MainNetBeta_RPC)
-	// FAG
+	// USDC
 	metadata, err := GetTokenMetadata(ctx, client, "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
 	assert.Nil(err)
 	d, _ := json.Marshal(metadata)

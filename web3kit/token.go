@@ -1,6 +1,7 @@
 package web3kit
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 
@@ -39,10 +40,13 @@ func GetTokenMetadata(ctx context.Context, client *rpc.Client, mint string) (*Me
 		if err != nil {
 			return nil, fmt.Errorf("metadata address: %w", err)
 		}
+		name := string(bytes.Trim([]byte(meta.Data.Name), "\x00"))
+		symbol := string(bytes.Trim([]byte(meta.Data.Symbol), "\x00"))
+		uri := string(bytes.Trim([]byte(meta.Data.Uri), "\x00"))
 		return &Metadata{
-			Name:     meta.Data.Name,
-			Symbol:   meta.Data.Symbol,
-			Uri:      meta.Data.Uri,
+			Name:     name,
+			Symbol:   symbol,
+			Uri:      uri,
 			Decimals: decimals,
 		}, nil
 
