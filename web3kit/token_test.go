@@ -22,8 +22,8 @@ func TestGetTokenMetadata(t *testing.T) {
 	assert.Equal("USDC", metadata.Symbol)
 	assert.Equal(6, metadata.Decimals)
 
-	// ai16z
-	metadata, err = GetTokenMetadata(ctx, client, "HeLp6NuQkmYB4pYWo2zYs22mESHXPQYzXbB8n4V98jwC")
+	// USTRY
+	metadata, err = GetTokenMetadata(ctx, client, "USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j")
 	assert.Nil(err)
 	d, _ = json.Marshal(metadata)
 	t.Logf("metadata: %s", d)

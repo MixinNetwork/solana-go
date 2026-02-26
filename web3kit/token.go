@@ -26,34 +26,15 @@ func GetTokenMetadata(ctx context.Context, client *rpc.Client, mint string) (*Me
 	}
 	owner := assetAccountInfo.Value.Owner.String()
 	if owner == solana.TokenProgramID.String() {
-		mintAccount := &token.Mint{}
-		if err := mintAccount.UnmarshalWithDecoder(bin.NewBinDecoder(assetAccountInfo.GetBinary())); err != nil {
-			return nil, fmt.Errorf("unmarshal mint account: %w", err)
-		}
-		decimals := int(mintAccount.Decimals)
-		metadataAddress, _, err := solana.FindTokenMetadataAddress(solana.MPK(mint))
-		if err != nil {
-			return nil, fmt.Errorf("derive metadata address: %w", err)
-		}
-		var meta token_metadata.Metadata
-		err = client.GetAccountDataBorshInto(ctx, metadataAddress, &meta)
-		if err != nil {
-			return nil, fmt.Errorf("metadata address: %w", err)
-		}
-		name := string(bytes.Trim([]byte(meta.Data.Name), "\x00"))
-		symbol := string(bytes.Trim([]byte(meta.Data.Symbol), "\x00"))
-		uri := string(bytes.Trim([]byte(meta.Data.Uri), "\x00"))
-		return &Metadata{
-			Name:     name,
-			Symbol:   symbol,
-			Uri:      uri,
-			Decimals: decimals,
-		}, nil
-
+		return getTokenMeta(ctx, client, assetAccountInfo, mint)
 	} else if owner == solana.Token2022ProgramID.String() {
 		meta, decimals, _, err := GetToken2022Metadata(ctx, client, solana.MPK(mint), solana.Token2022ProgramID, nil)
 		if err != nil {
 			return nil, fmt.Errorf("get token metadata: %w", err)
+		}
+		if meta == nil {
+			// fallback to token metadata
+			return getTokenMeta(ctx, client, assetAccountInfo, mint)
 		}
 		return &Metadata{
 			Name:     meta.Name,
@@ -65,4 +46,30 @@ func GetTokenMetadata(ctx context.Context, client *rpc.Client, mint string) (*Me
 	} else {
 		return nil, fmt.Errorf("unsupported token program: %s", owner)
 	}
+}
+
+func getTokenMeta(ctx context.Context, client *rpc.Client, assetAccountInfo *rpc.GetAccountInfoResult, mint string) (*Metadata, error) {
+	mintAccount := &token.Mint{}
+	if err := mintAccount.UnmarshalWithDecoder(bin.NewBinDecoder(assetAccountInfo.GetBinary())); err != nil {
+		return nil, fmt.Errorf("unmarshal mint account: %w", err)
+	}
+	decimals := int(mintAccount.Decimals)
+	metadataAddress, _, err := solana.FindTokenMetadataAddress(solana.MPK(mint))
+	if err != nil {
+		return nil, fmt.Errorf("derive metadata address: %w", err)
+	}
+	var meta token_metadata.Metadata
+	err = client.GetAccountDataBorshInto(ctx, metadataAddress, &meta)
+	if err != nil {
+		return nil, fmt.Errorf("metadata address: %w", err)
+	}
+	name := string(bytes.Trim([]byte(meta.Data.Name), "\x00"))
+	symbol := string(bytes.Trim([]byte(meta.Data.Symbol), "\x00"))
+	uri := string(bytes.Trim([]byte(meta.Data.Uri), "\x00"))
+	return &Metadata{
+		Name:     name,
+		Symbol:   symbol,
+		Uri:      uri,
+		Decimals: decimals,
+	}, nil
 }

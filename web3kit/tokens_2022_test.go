@@ -20,4 +20,13 @@ func TestGetToken2022Metadata(t *testing.T) {
 	if fee != nil {
 		t.Logf("fee: %+v", fee)
 	}
+	metadata, decimal, fee, err = GetToken2022Metadata(ctx, client, solana.MPK("USTRYnGgcHAhdWsanv8BG6vHGd4p7UGgoB9NRd8ei7j"), solana.Token2022ProgramID, nil)
+	if err != nil {
+		t.Error(err)
+		return
+	}
+	t.Logf("metadata: %+v %d", metadata, decimal)
+	if fee != nil {
+		t.Logf("fee: %+v", fee)
+	}
 }
