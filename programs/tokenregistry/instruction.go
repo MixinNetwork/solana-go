@@ -43,7 +43,7 @@ func registryDecodeInstruction(accounts []*solana.AccountMeta, data []byte) (int
 func DecodeInstruction(accounts []*solana.AccountMeta, data []byte) (*Instruction, error) {
 	var inst Instruction
 	if err := bin.NewBinDecoder(data).Decode(&inst); err != nil {
-		return nil, fmt.Errorf("unable to decode instruction for serum program: %w", err)
+		return nil, fmt.Errorf("unable to decode instruction for token registry program: %w", err)
 	}
 
 	if v, ok := inst.Impl.(solana.AccountsSettable); ok {
