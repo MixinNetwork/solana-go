@@ -18,14 +18,6 @@ More contracts to come.
     <img src="https://user-images.githubusercontent.com/15271561/128235229-1d2d9116-23bb-464e-b2cc-8fb6355e3b55.png" margin="auto" height="175"/>
 </div>
 
-## Future Development
-
-`solana-go` is exclusively supported by my own time (which is money).
-
-If my work has been useful in building your for-profit services/infra/bots/etc., consider donating at 8tTwBazKr2ST1b2kNrM7JMXwixRTvZicn7eRBihThymm (solana) to support future development.
-
-Thanks!
-
 ## Contents
 
 - [Solana SDK library for Go](#solana-sdk-library-for-go)
