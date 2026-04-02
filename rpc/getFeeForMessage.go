@@ -18,10 +18,7 @@ import (
 	"context"
 )
 
-// Get the fee the network will charge for a particular Message.
-//
-// **NEW**: This method is only available in solana-core v1.9 or newer. Please use
-// `getFees` for solana-core v1.8.
+// GetFeeForMessage returns the fee the network will charge for a particular Message.
 func (cl *Client) GetFeeForMessage(
 	ctx context.Context,
 	message string, // Base-64 encoded Message

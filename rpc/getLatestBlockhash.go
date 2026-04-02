@@ -22,10 +22,7 @@ import (
 	"github.com/gagliardetto/solana-go"
 )
 
-// Returns the latest blockhash.
-//
-// **NEW: This method is only available in solana-core v1.9 or newer. Please use
-// `getRecentBlockhash` for solana-core v1.8**
+// GetLatestBlockhash returns the latest blockhash.
 func (cl *Client) GetLatestBlockhash(
 	ctx context.Context,
 	commitment CommitmentType, // optional

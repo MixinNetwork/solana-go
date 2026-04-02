@@ -88,9 +88,9 @@ var tokenRegistryRegisterCmd = &cobra.Command{
 			return fmt.Errorf("registrar key must be present in the vault to register a token")
 		}
 
-		blockHashResult, err := client.GetRecentBlockhash(context.Background(), rpc.CommitmentMax)
+		blockHashResult, err := client.GetLatestBlockhash(context.Background(), rpc.CommitmentFinalized)
 		if err != nil {
-			return fmt.Errorf("unable retrieve recent block hash: %w", err)
+			return fmt.Errorf("unable retrieve latest blockhash: %w", err)
 		}
 
 		tokenMetaAccount := solana.NewWallet()
@@ -98,7 +98,7 @@ var tokenRegistryRegisterCmd = &cobra.Command{
 		lamport, err := client.GetMinimumBalanceForRentExemption(
 			context.Background(),
 			tokenregistry.TOKEN_META_SIZE,
-			rpc.CommitmentMax,
+			rpc.CommitmentFinalized,
 		)
 		if err != nil {
 			return fmt.Errorf("unable to retrieve lapoint rent: %w", err)

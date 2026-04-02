@@ -26,9 +26,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var getConfirmedBlockCmd = &cobra.Command{
-	Use:   "confirmed-block {block_num}",
-	Short: "Retrieve a confirmed block, with all of its transactions",
+var getBlockCmd = &cobra.Command{
+	Use:   "block {block_num}",
+	Short: "Retrieve a block, with all of its transactions",
 	Args:  cobra.ExactArgs(1),
 	RunE: func(cmd *cobra.Command, args []string) (err error) {
 		client := getClient()
@@ -39,7 +39,7 @@ var getConfirmedBlockCmd = &cobra.Command{
 			return fmt.Errorf("unable to parse provided slot number %q: %w", args[0], err)
 		}
 
-		resp, err := client.GetConfirmedBlock(ctx, uint64(slot))
+		resp, err := client.GetBlock(ctx, uint64(slot))
 		if err != nil {
 			return err
 		}
@@ -52,5 +52,5 @@ var getConfirmedBlockCmd = &cobra.Command{
 }
 
 func init() {
-	getCmd.AddCommand(getConfirmedBlockCmd)
+	getCmd.AddCommand(getBlockCmd)
 }

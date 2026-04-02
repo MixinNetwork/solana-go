@@ -41,31 +41,8 @@ type GetBalanceResult struct {
 	Value uint64 `json:"value"`
 }
 
-type GetRecentBlockhashResult struct {
-	RPCContext
-	Value *BlockhashResult `json:"value"`
-}
-
-type BlockhashResult struct {
-	Blockhash     solana.Hash   `json:"blockhash"`
-	FeeCalculator FeeCalculator `json:"feeCalculator"`
-}
-
 type FeeCalculator struct {
 	LamportsPerSignature uint64 `json:"lamportsPerSignature"`
-}
-
-type GetConfirmedBlockResult struct {
-	Blockhash solana.Hash `json:"blockhash"`
-
-	// could be zeroes if ledger was clean-up and this is unavailable
-	PreviousBlockhash solana.Hash `json:"previousBlockhash"`
-
-	ParentSlot   uint64                  `json:"parentSlot"`
-	Transactions []TransactionWithMeta   `json:"transactions"`
-	Signatures   []solana.Signature      `json:"signatures"`
-	Rewards      []BlockReward           `json:"rewards"`
-	BlockTime    *solana.UnixTimeSeconds `json:"blockTime,omitempty"`
 }
 
 type BlockReward struct {
@@ -433,15 +410,6 @@ type KeyedAccount struct {
 	Account *Account         `json:"account"`
 }
 
-type GetConfirmedSignaturesForAddress2Opts struct {
-	Limit      *uint64          `json:"limit,omitempty"`
-	Before     solana.Signature `json:"before,omitempty"`
-	Until      solana.Signature `json:"until,omitempty"`
-	Commitment CommitmentType   `json:"commitment,omitempty"`
-}
-
-type GetConfirmedSignaturesForAddress2Result []*TransactionSignature
-
 type RPCFilter struct {
 	Memcmp   *RPCFilterMemcmp `json:"memcmp,omitempty"`
 	DataSize uint64           `json:"dataSize,omitempty"`
@@ -455,12 +423,6 @@ type RPCFilterMemcmp struct {
 type CommitmentType string
 
 const (
-	CommitmentMax          CommitmentType = "max"          // Deprecated as of v1.5.5
-	CommitmentRecent       CommitmentType = "recent"       // Deprecated as of v1.5.5
-	CommitmentRoot         CommitmentType = "root"         // Deprecated as of v1.5.5
-	CommitmentSingle       CommitmentType = "single"       // Deprecated as of v1.5.5
-	CommitmentSingleGossip CommitmentType = "singleGossip" // Deprecated as of v1.5.5
-
 	// The node will query the most recent block confirmed by supermajority
 	// of the cluster as having reached maximum lockout,
 	// meaning the cluster has recognized this block as finalized.
