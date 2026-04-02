@@ -23,7 +23,6 @@ import (
 	"os"
 
 	"github.com/gagliardetto/solana-go"
-	_ "github.com/gagliardetto/solana-go/programs/serum"
 	_ "github.com/gagliardetto/solana-go/programs/system"
 	_ "github.com/gagliardetto/solana-go/programs/token"
 	_ "github.com/gagliardetto/solana-go/programs/tokenregistry"
