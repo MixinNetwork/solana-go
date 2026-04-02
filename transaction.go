@@ -259,7 +259,15 @@ func NewTransaction(instructions []Instruction, recentBlockHash Hash, opts ...Tr
 	}
 
 	addressLookupKeysMap := make(map[PublicKey]addressTablePubkeyWithIndex) // all accounts from tables as map
-	for addressTablePubKey, addressTable := range options.addressTables {
+	sortedTableKeys := make(PublicKeySlice, 0, len(options.addressTables))
+	for k := range options.addressTables {
+		sortedTableKeys = append(sortedTableKeys, k)
+	}
+	sort.Slice(sortedTableKeys, func(i, j int) bool {
+		return bytes.Compare(sortedTableKeys[i][:], sortedTableKeys[j][:]) < 0
+	})
+	for _, addressTablePubKey := range sortedTableKeys {
+		addressTable := options.addressTables[addressTablePubKey]
 		if len(addressTable) > 256 {
 			return nil, fmt.Errorf("max lookup table index exceeded for %s table", addressTablePubKey)
 		}
@@ -412,7 +420,15 @@ func NewTransaction(instructions []Instruction, recentBlockHash Hash, opts ...Tr
 	if len(lookupsMap) > 0 {
 		lookups := make([]MessageAddressTableLookup, 0, len(lookupsMap))
 
-		for tablePubKey, l := range lookupsMap {
+		sortedLookupKeys := make(PublicKeySlice, 0, len(lookupsMap))
+		for k := range lookupsMap {
+			sortedLookupKeys = append(sortedLookupKeys, k)
+		}
+		sort.Slice(sortedLookupKeys, func(i, j int) bool {
+			return bytes.Compare(sortedLookupKeys[i][:], sortedLookupKeys[j][:]) < 0
+		})
+		for _, tablePubKey := range sortedLookupKeys {
+			l := lookupsMap[tablePubKey]
 			lookupsWritableKeys = append(lookupsWritableKeys, l.Writable...)
 			lookupsReadOnlyKeys = append(lookupsReadOnlyKeys, l.Readonly...)
 
