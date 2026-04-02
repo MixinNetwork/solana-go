@@ -89,20 +89,20 @@ func TestNewTransaction(t *testing.T) {
 		MustPublicKeyFromBase58("9hFtYBYmBJCVguRYs9pBTWKYAFoKfjYR7zBPpEkVsmD"),
 		MustPublicKeyFromBase58("6FzXPEhCJoBx7Zw3SN9qhekHemd6E2b8kVguitmVAngW"),
 		MustPublicKeyFromBase58("SysvarS1otHashes111111111111111111111111111"),
-		MustPublicKeyFromBase58("SysvarC1ock11111111111111111111111111111111"),
 		MustPublicKeyFromBase58("11111111111111111111111111111111"),
+		MustPublicKeyFromBase58("SysvarC1ock11111111111111111111111111111111"),
 		MustPublicKeyFromBase58("Vote111111111111111111111111111111111111111"),
 	})
 
 	assert.Equal(t, trx.Message.Instructions, []CompiledInstruction{
 		{
-			ProgramIDIndex: 5,
+			ProgramIDIndex: 4,
 			Accounts:       []uint16{0, 0o1},
 			Data:           []byte{0xaa, 0xbb},
 		},
 		{
 			ProgramIDIndex: 6,
-			Accounts:       []uint16{4, 3, 1, 2},
+			Accounts:       []uint16{5, 3, 1, 2},
 			Data:           []byte{0xcc, 0xdd},
 		},
 	})
@@ -329,7 +329,7 @@ func TestTransactionSerializeExisting(t *testing.T) {
 }
 
 func TestTransactionSerializePumpFunSwap(t *testing.T) {
-	expectedEncoded := "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAcMC8/60geEHarnEMtcmE3t7lADNe2/gxa7NAhBe5Ufe5mtEeak/ClEpPqCUb74FUJuG/soxrZkZndgfGrZ9WamRvj7gB4Ax7akKlldX2HW0ZpscDlcG0xgSGrm4qPYLjpXha3ZyoEhdb0urZWzhcxyIVTkHNfJDlRkaaaZumtUuJid6LnvUOa256MT0Ym0MG/y6Uqt2PX3ijrL9vC9eTaGKzqGXmnuD1SAyrz2Y1fk3C8Y1Y1Fwep0ifs3I9l5PHKm6c4nvkyiO9V3lgShoznE+kfvld5CoS4qMMKpnUOErY8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpBqfVFxksXFEhjMlMPUrxf1ja7gibof1E49vZigAAAACs8TbrAfwcTog9I8i1hEq1mjf2at1XxemsO1PgWdNcZAFW4PaTZlrPRNsVaL8XW6pRicuX9dL/O2VdK7b9bRiw0WlzNBoKArNIcmjqJI0o+XoQGnMjSEA/HZqyYrSJgLkBCwwFAQYCAwQABwgJCgsYZgY9EgHa6+pMR9bEaRkAAHg1HjQAAAAA"
+	expectedEncoded := "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAcMC8/60geEHarnEMtcmE3t7lADNe2/gxa7NAhBe5Ufe5mFrdnKgSF1vS6tlbOFzHIhVOQc18kOVGRpppm6a1S4mJ3oue9Q5rbnoxPRibQwb/LpSq3Y9feKOsv28L15NoYrrRHmpPwpRKT6glG++BVCbhv7KMa2ZGZ3YHxq2fVmpkb4+4AeAMe2pCpZXV9h1tGabHA5XBtMYEhq5uKj2C46VwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAVbg9pNmWs9E2xVovxdbqlGJy5f10v87ZV0rtv1tGLAGp9UXGSxcUSGMyUw9SvF/WNruCJuh/UTj29mKAAAAAAbd9uHXZaGT2cvhRs7reawctIXtX1s3kTqM9YV+/wCpOoZeae4PVIDKvPZjV+TcLxjVjUXB6nSJ+zcj2Xk8cqas8TbrAfwcTog9I8i1hEq1mjf2at1XxemsO1PgWdNcZOnOJ75MojvVd5YEoaM5xPpH75XeQqEuKjDCqZ1DhK2P0WlzNBoKArNIcmjqJI0o+XoQGnMjSEA/HZqyYrSJgLkBBgwJAwsEAQIABQgHCgYYZgY9EgHa6+pMR9bEaRkAAHg1HjQAAAAA"
 	instruction := &testTransactionInstructions{
 		programID: MPK("6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P"),
 		accounts: []*AccountMeta{
