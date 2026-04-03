@@ -29,7 +29,7 @@ import (
 )
 
 func init() {
-	solana.RegisterInstructionDecoder(ProgramID(), registryDecodeInstruction)
+	solana.MustRegisterInstructionDecoder(ProgramID(), registryDecodeInstruction)
 }
 
 func registryDecodeInstruction(accounts []*solana.AccountMeta, data []byte) (interface{}, error) {

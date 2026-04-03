@@ -137,15 +137,15 @@ var _ bin.EncoderDecoder = &Message{}
 // SetVersion sets the message version.
 // This method forces the message to be encoded in the specified version.
 // NOTE: if you set lookups, the version will default to V0.
-func (m *Message) SetVersion(version MessageVersion) *Message {
+func (m *Message) SetVersion(version MessageVersion) (*Message, error) {
 	// check if the version is valid
 	switch version {
 	case MessageVersionV0, MessageVersionLegacy:
 	default:
-		panic(fmt.Errorf("invalid message version: %d", version))
+		return nil, fmt.Errorf("invalid message version: %d", version)
 	}
 	m.version = version
-	return m
+	return m, nil
 }
 
 // GetVersion returns the message version.

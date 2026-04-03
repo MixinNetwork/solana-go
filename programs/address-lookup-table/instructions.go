@@ -14,15 +14,15 @@ import (
 
 var ProgramID solana.PublicKey = solana.AddressLookupTableProgramID
 
-func SetProgramID(pubkey solana.PublicKey) {
+func SetProgramID(pubkey solana.PublicKey) error {
 	ProgramID = pubkey
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "AddressLookupTable"
 
 func init() {
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	solana.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const (
