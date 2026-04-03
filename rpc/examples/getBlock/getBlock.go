@@ -26,13 +26,13 @@ func main() {
 	endpoint := rpc.TestNet_RPC
 	client := rpc.New(endpoint)
 
-	example, err := client.GetRecentBlockhash(context.TODO(), rpc.CommitmentFinalized)
+	slot, err := client.GetSlot(context.TODO(), rpc.CommitmentFinalized)
 	if err != nil {
 		panic(err)
 	}
 
 	{
-		out, err := client.GetBlock(context.TODO(), uint64(example.Context.Slot))
+		out, err := client.GetBlock(context.TODO(), slot)
 		if err != nil {
 			panic(err)
 		}
@@ -44,7 +44,7 @@ func main() {
 		includeRewards := false
 		out, err := client.GetBlockWithOpts(
 			context.TODO(),
-			uint64(example.Context.Slot),
+			slot,
 			// You can specify more options here:
 			&rpc.GetBlockOpts{
 				Encoding:   solana.EncodingBase64,

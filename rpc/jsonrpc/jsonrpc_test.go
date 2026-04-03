@@ -37,7 +37,7 @@ func TestMain(m *testing.M) {
 		// put request and body to channel for the client to investigate them
 		requestChan <- &RequestData{r, string(data)}
 
-		fmt.Fprintf(w, responseBody)
+		fmt.Fprint(w, responseBody)
 	}))
 	defer httpServer.Close()
 

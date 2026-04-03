@@ -117,7 +117,7 @@ func Test_ProgramSubscribe(t *testing.T) {
 	zlog, _ = zap.NewDevelopment()
 
 	fmt.Println("Dialing")
-	c, err := Connect(context.Background(), "wss://solana-api.projectserum.com")
+	c, err := Connect(context.Background(), "wss://api.mainnet-beta.solana.com")
 	fmt.Println("Hello?")
 	defer c.Close()
 	require.NoError(t, err)

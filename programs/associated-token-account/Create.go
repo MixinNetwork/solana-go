@@ -132,7 +132,7 @@ func (inst Create) Build() *Instruction {
 
 	return &Instruction{BaseVariant: bin.BaseVariant{
 		Impl:   inst,
-		TypeID: bin.NoTypeIDDefaultID,
+		TypeID: bin.TypeIDFromUint8(Instruction_Create),
 	}}
 }
 
@@ -194,7 +194,7 @@ func (inst *Create) EncodeToTree(parent treeout.Branches) {
 }
 
 func (inst Create) MarshalWithEncoder(encoder *bin.Encoder) error {
-	return encoder.WriteBytes([]byte{}, false)
+	return nil
 }
 
 func (inst *Create) UnmarshalWithDecoder(decoder *bin.Decoder) error {

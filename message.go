@@ -349,8 +349,7 @@ func (mx *Message) MarshalV0() ([]byte, error) {
 	}
 	buf = append([]byte{byte(versionNum + 127)}, buf...)
 
-	// wite length of address table lookups as u8
-	buf = append(buf, byte(len(mx.AddressTableLookups)))
+	bin.EncodeCompactU16Length(&buf, len(mx.AddressTableLookups))
 	for _, lookup := range mx.AddressTableLookups {
 		// write account pubkey
 		buf = append(buf, lookup.AccountKey[:]...)
@@ -516,8 +515,7 @@ func (mx *Message) UnmarshalV0(decoder *bin.Decoder) (err error) {
 		return err
 	}
 
-	// Read address table lookups length:
-	addressTableLookupsLen, err := decoder.ReadByte()
+	addressTableLookupsLen, err := decoder.ReadCompactU16()
 	if err != nil {
 		return fmt.Errorf("failed to read address table lookups length: %w", err)
 	}

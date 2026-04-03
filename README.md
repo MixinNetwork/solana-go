@@ -10,21 +10,11 @@ Go library to interface with Solana JSON RPC and WebSocket interfaces.
 
 More contracts to come.
 
-**If you're using/developing Solana programs written in [Anchor Framework](https://github.com/project-serum/anchor), you can use [anchor-go](https://github.com/gagliardetto/anchor-go) to generate Golang clients**
-
-**If you're looking for a SERUM library, you can check out [gagliardetto/serum-go](https://github.com/gagliardetto/serum-go) ([./programs/serum](https://github.com/gagliardetto/solana-go/tree/main/programs/serum) is deprecated.**)
+**If you're using/developing Solana programs written in [Anchor Framework](https://github.com/coral-xyz/anchor), you can use [anchor-go](https://github.com/gagliardetto/anchor-go) to generate Golang clients**
 
 <div align="center">
     <img src="https://user-images.githubusercontent.com/15271561/128235229-1d2d9116-23bb-464e-b2cc-8fb6355e3b55.png" margin="auto" height="175"/>
 </div>
-
-## Future Development
-
-`solana-go` is exclusively supported by my own time (which is money).
-
-If my work has been useful in building your for-profit services/infra/bots/etc., consider donating at 8tTwBazKr2ST1b2kNrM7JMXwixRTvZicn7eRBihThymm (solana) to support future development.
-
-Thanks!
 
 ## Contents
 
@@ -72,7 +62,6 @@ Thanks!
   - [x] memo
   - [ ] name-service
   - [ ] ...
-- [ ] Client for Serum
 - [x] [Metaplex](https://github.com/gagliardetto/metaplex-go):
   - [x] auction
   - [x] metaplex
@@ -85,7 +74,7 @@ Thanks!
 
 There is currently **no stable release**. The SDK is actively developed and latest is `v1.12.0` which is an `alpha` release.
 
-The RPC and WS client implementation is based on [this RPC spec](https://github.com/solana-labs/solana/blob/c2435363f39723cef59b91322f3b6a815008af29/docs/src/developing/clients/jsonrpc-api.md).
+The RPC and WS client implementation is based on the [Solana RPC API documentation](https://solana.com/docs/rpc).
 
 ## Note
 
@@ -94,7 +83,7 @@ The RPC and WS client implementation is based on [this RPC spec](https://github.
 
 ## Requirements
 
-- Go 1.19 or later
+- Go 1.24 or later
 
 ## Installation
 
@@ -837,23 +826,8 @@ func main() {
   - [GetBlocks](#index--rpc--getblocks)
   - [GetBlocksWithLimit](#index--rpc--getblockswithlimit)
   - [GetClusterNodes](#index--rpc--getclusternodes)
-  - [GetConfirmedBlock](#index--rpc--getconfirmedblock)
-    - **DEPRECATED: Please use [GetBlock](#index--rpc--getblock) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetConfirmedBlocks](#index--rpc--getconfirmedblocks)
-    - **DEPRECATED: Please use [GetBlocks](#index--rpc--getblocks) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetConfirmedBlocksWithLimit](#index--rpc--getconfirmedblockswithlimit)
-    - **DEPRECATED: Please use [GetBlocksWithLimit](#index--rpc--getblockswithlimit) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetConfirmedSignaturesForAddress2](#index--rpc--getconfirmedsignaturesforaddress2)
-    - **DEPRECATED: Please use [GetSignaturesForAddress](#index--rpc--getsignaturesforaddress) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetConfirmedTransaction](#index--rpc--getconfirmedtransaction)
-    - **DEPRECATED: Please use [GetTransaction](#index--rpc--gettransaction) instead** (This method is expected to be removed in **solana-core v2.0**)
   - [GetEpochInfo](#index--rpc--getepochinfo)
   - [GetEpochSchedule](#index--rpc--getepochschedule)
-  - [GetFeeCalculatorForBlockhash](#index--rpc--getfeecalculatorforblockhash)
-    - **DEPRECATED: Please use [IsBlockhashValid](#index--rpc--isblockhashvalid) or [GetFeeForMessage](#index--rpc--getfeeformessage) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetFeeRateGovernor](#index--rpc--getfeerategovernor) **DEPRECATED**
-  - [GetFees](#index--rpc--getfees)
-    - **DEPRECATED: Please use [GetFeeForMessage](#index--rpc--getfeeformessage) instead** (This method is expected to be removed in **solana-core v2.0**)
   - [GetFeeForMessage](#index--rpc--getfeeformessage)
   - [GetFirstAvailableBlock](#index--rpc--getfirstavailableblock)
   - [GetGenesisHash](#index--rpc--getgenesishash)
@@ -871,9 +845,6 @@ func main() {
   - [GetMinimumBalanceForRentExemption](#index--rpc--getminimumbalanceforrentexemption)
   - [GetMultipleAccounts](#index--rpc--getmultipleaccounts)
   - [GetProgramAccounts](#index--rpc--getprogramaccounts)
-  - [GetRecentBlockhash](#index--rpc--getrecentblockhash)
-    - To be used with **solana v1.8**
-    - For solana v1.9 or newer: **DEPRECATED: Please use [GetLatestBlockhash](#index--rpc--getlatestblockhash) instead** (This method is expected to be removed in **solana-core v2.0**)
   - [GetRecentPerformanceSamples](#index--rpc--getrecentperformancesamples)
   - [GetRecentPrioritizationFees](#index--rpc--getrecentprioritizationfees)
   - [GetSignatureStatuses](#index--rpc--getsignaturestatuses)
@@ -881,9 +852,6 @@ func main() {
   - [GetSlot](#index--rpc--getslot)
   - [GetSlotLeader](#index--rpc--getslotleader)
   - [GetSlotLeaders](#index--rpc--getslotleaders)
-  - [GetSnapshotSlot](#index--rpc--getsnapshotslot)
-    - **DEPRECATED: Please use [GetHighestSnapshotSlot](#index--rpc--gethighestsnapshotslot) instead** (This method is expected to be removed in **solana-core v2.0**)
-  - [GetStakeActivation](#index--rpc--getstakeactivation)
   - [GetSupply](#index--rpc--getsupply)
   - [GetTokenAccountBalance](#index--rpc--gettokenaccountbalance)
   - [GetTokenAccountsByDelegate](#index--rpc--gettokenaccountsbydelegate)
@@ -1349,219 +1317,6 @@ func main() {
 }
 ```
 
-#### [index](#contents) > [RPC](#rpc-methods) > GetConfirmedBlock
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/AlekSi/pointer"
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  example, err := client.GetLatestBlockhash(
-    context.TODO(),
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-
-  { // deprecated and is going to be removed in solana-core v1.8
-    out, err := client.GetConfirmedBlock(
-      context.TODO(),
-      uint64(example.Context.Slot),
-    )
-    if err != nil {
-      panic(err)
-    }
-    spew.Dump(out)
-  }
-  {
-    slot := uint64(example.Context.Slot)
-    out, err := client.GetConfirmedBlockWithOpts(
-      context.TODO(),
-      slot,
-      // You can specify more options here:
-      &rpc.GetConfirmedBlockOpts{
-        Encoding:   solana.EncodingBase64,
-        Commitment: rpc.CommitmentFinalized,
-        // Get only signatures:
-        TransactionDetails: rpc.TransactionDetailsSignatures,
-        // Exclude rewards:
-        Rewards: pointer.ToBool(false),
-      },
-    )
-    if err != nil {
-      panic(err)
-    }
-    spew.Dump(out)
-  }
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetConfirmedBlocks
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  example, err := client.GetLatestBlockhash(
-    context.TODO(),
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-
-  {
-    endSlot := uint64(example.Context.Slot)
-    // deprecated and is going to be removed in solana-core v1.8
-    out, err := client.GetConfirmedBlocks(
-      context.TODO(),
-      uint64(example.Context.Slot-3),
-      &endSlot,
-      rpc.CommitmentFinalized,
-    )
-    if err != nil {
-      panic(err)
-    }
-    spew.Dump(out)
-  }
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetConfirmedBlocksWithLimit
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  example, err := client.GetLatestBlockhash(
-    context.TODO(),
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-
-  limit := uint64(3)
-  { // deprecated and is going to be removed in solana-core v1.8
-    out, err := client.GetConfirmedBlocksWithLimit(
-      context.TODO(),
-      uint64(example.Context.Slot-10),
-      limit,
-      rpc.CommitmentFinalized,
-    )
-    if err != nil {
-      panic(err)
-    }
-    spew.Dump(out)
-  }
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetConfirmedSignaturesForAddress2
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  pubKey := solana.MustPublicKeyFromBase58("SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt") // serum token
-  {
-    // deprecated and is going to be removed in solana-core v1.8
-    out, err := client.GetConfirmedSignaturesForAddress2(
-      context.TODO(),
-      pubKey,
-      // TODO:
-      nil,
-    )
-    if err != nil {
-      panic(err)
-    }
-    spew.Dump(out)
-  }
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetConfirmedTransaction
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  pubKey := solana.MustPublicKeyFromBase58("SRMuApVNdxXokk5GT7XD5cUUgXMBCoAz2LHeuAoKWRt") // serum token
-  // Let's get a valid transaction to use in the example:
-  example, err := client.GetConfirmedSignaturesForAddress2(
-    context.TODO(),
-    pubKey,
-    nil,
-  )
-  if err != nil {
-    panic(err)
-  }
-
-  out, err := client.GetConfirmedTransaction(
-    context.TODO(),
-    example[0].Signature,
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
 #### [index](#contents) > [RPC](#rpc-methods) > GetEpochInfo
 
 ```go
@@ -1607,95 +1362,6 @@ func main() {
 
   out, err := client.GetEpochSchedule(
     context.TODO(),
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetFeeCalculatorForBlockhash
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  example, err := client.GetLatestBlockhash(
-    context.TODO(),
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-
-  out, err := client.GetFeeCalculatorForBlockhash(
-    context.TODO(),
-    example.Value.Blockhash,
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetFeeRateGovernor
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  out, err := client.GetFeeRateGovernor(
-    context.TODO(),
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetFees
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  out, err := client.GetFees(
-    context.TODO(),
-    rpc.CommitmentFinalized,
   )
   if err != nil {
     panic(err)
@@ -2196,33 +1862,6 @@ func main() {
 }
 ```
 
-#### [index](#contents) > [RPC](#rpc-methods) > GetRecentBlockhash
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  // DEPRECATED: This method is only available in solana-core v1.8 or older. Please use getLatestBlockhash for solana-core v1.9 or newer.
-  recent, err := client.GetRecentBlockhash(
-    context.TODO(),
-    rpc.CommitmentFinalized,
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(recent)
-}
-```
 #### [index](#contents) > [RPC](#rpc-methods) > GetRecentPerformanceSamples
 
 ```go
@@ -2422,63 +2061,6 @@ func main() {
     context.TODO(),
     uint64(recent.Context.Slot),
     10,
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetSnapshotSlot
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  out, err := client.GetSnapshotSlot(
-    context.TODO(),
-  )
-  if err != nil {
-    panic(err)
-  }
-  spew.Dump(out)
-}
-```
-
-#### [index](#contents) > [RPC](#rpc-methods) > GetStakeActivation
-
-```go
-package main
-
-import (
-  "context"
-
-  "github.com/davecgh/go-spew/spew"
-  "github.com/gagliardetto/solana-go"
-  "github.com/gagliardetto/solana-go/rpc"
-)
-
-func main() {
-  endpoint := rpc.TestNet_RPC
-  client := rpc.New(endpoint)
-
-  pubKey := solana.MustPublicKeyFromBase58("EW2p7QCJNHMVj5nQCcW7Q2BDETtNBXn68FyucU4RCjvb")
-  out, err := client.GetStakeActivation(
-    context.TODO(),
-    pubKey,
-    rpc.CommitmentFinalized,
-    nil,
   )
   if err != nil {
     panic(err)

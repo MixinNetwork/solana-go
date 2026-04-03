@@ -81,10 +81,7 @@ func (cl *Client) GetBlock(
 	)
 }
 
-// GetBlock returns identity and transaction information about a confirmed block in the ledger.
-//
-// NEW: This method is only available in solana-core v1.7 or newer.
-// Please use `getConfirmedBlock` for solana-core v1.6
+// GetBlockWithOpts returns identity and transaction information about a confirmed block in the ledger.
 func (cl *Client) GetBlockWithOpts(
 	ctx context.Context,
 	slot uint64,
