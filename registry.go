@@ -77,20 +77,35 @@ func (reg *decoderRegistry) RegisterIfNew(programID PublicKey, decoder Instructi
 	return true
 }
 
-func RegisterInstructionDecoder(programID PublicKey, decoder InstructionDecoder) {
-	prev, has := instructionDecoderRegistry.Get(programID)
+// RegisterInstructionDecoder registers a decoder for the given programID.
+// Returns an error if a different decoder is already registered for that programID.
+// Re-registering the same decoder function is a no-op.
+func RegisterInstructionDecoder(programID PublicKey, decoder InstructionDecoder) error {
+	instructionDecoderRegistry.mu.Lock()
+	defer instructionDecoderRegistry.mu.Unlock()
+
+	prev, has := instructionDecoderRegistry.decoders[programID]
 	if has {
-		// If it's the same function, then OK (tollerate multiple calls with same params).
+		// If it's the same function, then OK (tolerate multiple calls with same params).
 		if isSameFunction(prev, decoder) {
-			return
+			return nil
 		}
-		// If it's another decoder for the same pubkey, then panic.
-		panic(fmt.Sprintf("unable to re-register instruction decoder for program %s", programID))
+		// If it's another decoder for the same pubkey, return error.
+		return fmt.Errorf("unable to re-register instruction decoder for program %s", programID)
 	}
-	instructionDecoderRegistry.RegisterIfNew(programID, decoder)
+	instructionDecoderRegistry.decoders[programID] = decoder
+	return nil
 }
 
-func isSameFunction(f1 interface{}, f2 interface{}) bool {
+// MustRegisterInstructionDecoder is like RegisterInstructionDecoder but panics on error.
+// Intended for use in init() functions where error handling is not possible.
+func MustRegisterInstructionDecoder(programID PublicKey, decoder InstructionDecoder) {
+	if err := RegisterInstructionDecoder(programID, decoder); err != nil {
+		panic(err)
+	}
+}
+
+func isSameFunction(f1 any, f2 any) bool {
 	return reflect.ValueOf(f1).Pointer() == reflect.ValueOf(f2).Pointer()
 }
 

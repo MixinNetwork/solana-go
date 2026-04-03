@@ -29,15 +29,15 @@ import (
 
 var ProgramID solana.PublicKey = solana.StakeProgramID
 
-func SetProgramID(pubkey solana.PublicKey) {
+func SetProgramID(pubkey solana.PublicKey) error {
 	ProgramID = pubkey
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "Stake"
 
 func init() {
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	solana.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const (

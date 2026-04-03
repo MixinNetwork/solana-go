@@ -31,15 +31,15 @@ import (
 
 var ProgramID ag_solanago.PublicKey = ag_solanago.SystemProgramID
 
-func SetProgramID(pubkey ag_solanago.PublicKey) {
+func SetProgramID(pubkey ag_solanago.PublicKey) error {
 	ProgramID = pubkey
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "System"
 
 func init() {
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	ag_solanago.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const (

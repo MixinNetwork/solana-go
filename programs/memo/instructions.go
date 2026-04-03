@@ -26,13 +26,13 @@ import (
 
 var ProgramID = ag_solanago.MemoProgramID
 
-func SetProgramID(pubkey ag_solanago.PublicKey) {
+func SetProgramID(pubkey ag_solanago.PublicKey) error {
 	ProgramID = pubkey
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 func init() {
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	ag_solanago.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 type MemoInstruction struct {
