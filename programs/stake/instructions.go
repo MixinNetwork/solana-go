@@ -29,15 +29,15 @@ import (
 
 var ProgramID solana.PublicKey = solana.StakeProgramID
 
-func SetProgramID(pubkey solana.PublicKey) {
+func SetProgramID(pubkey solana.PublicKey) error {
 	ProgramID = pubkey
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "Stake"
 
 func init() {
-	solana.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	solana.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const (
@@ -147,7 +147,7 @@ func (inst Instruction) MarshalWithEncoder(encoder *bin.Encoder) error {
 	return encoder.Encode(inst.Impl)
 }
 
-func registryDecodeInstruction(accounts []*solana.AccountMeta, data []byte) (interface{}, error) {
+func registryDecodeInstruction(accounts []*solana.AccountMeta, data []byte) (any, error) {
 	inst, err := DecodeInstruction(accounts, data)
 	if err != nil {
 		return nil, err

@@ -31,15 +31,15 @@ import (
 
 var ProgramID ag_solanago.PublicKey = ag_solanago.SystemProgramID
 
-func SetProgramID(pubkey ag_solanago.PublicKey) {
+func SetProgramID(pubkey ag_solanago.PublicKey) error {
 	ProgramID = pubkey
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "System"
 
 func init() {
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	ag_solanago.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const (
@@ -78,6 +78,10 @@ const (
 
 	// Transfer lamports from a derived address
 	Instruction_TransferWithSeed
+
+	// One-time idempotent upgrade of legacy nonce versions in order to bump
+	// them out of chain blockhash domain.
+	Instruction_UpgradeNonceAccount
 )
 
 // InstructionIDToName returns the name of the instruction given its ID.
@@ -107,6 +111,8 @@ func InstructionIDToName(id uint32) string {
 		return "AssignWithSeed"
 	case Instruction_TransferWithSeed:
 		return "TransferWithSeed"
+	case Instruction_UpgradeNonceAccount:
+		return "UpgradeNonceAccount"
 	default:
 		return ""
 	}
@@ -163,6 +169,9 @@ var InstructionImplDef = ag_binary.NewVariantDefinition(
 		{
 			"TransferWithSeed", (*TransferWithSeed)(nil),
 		},
+		{
+			"UpgradeNonceAccount", (*UpgradeNonceAccount)(nil),
+		},
 	},
 )
 
@@ -198,7 +207,7 @@ func (inst Instruction) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	return encoder.Encode(inst.Impl)
 }
 
-func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (interface{}, error) {
+func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (any, error) {
 	inst, err := DecodeInstruction(accounts, data)
 	if err != nil {
 		return nil, err

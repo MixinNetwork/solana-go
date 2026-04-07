@@ -257,7 +257,7 @@ type Data struct {
 
 func (t Data) MarshalJSON() ([]byte, error) {
 	return json.Marshal(
-		[]interface{}{
+		[]any{
 			t.String(),
 			t.Encoding,
 		})
@@ -329,8 +329,7 @@ func (t Data) String() string {
 	case EncodingBase64Zstd:
 		enc, err := zstdEncoderPool.Get(nil)
 		if err != nil {
-			// TODO: remove panic?
-			panic(err)
+			return fmt.Sprintf("<zstd encoder error: %v>", err)
 		}
 		defer zstdEncoderPool.Put(enc)
 		return base64.StdEncoding.EncodeToString(enc.EncodeAll(t.Content, nil))

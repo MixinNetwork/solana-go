@@ -27,16 +27,16 @@ import (
 
 var ProgramID ag_solanago.PublicKey = ag_solanago.ComputeBudget
 
-func SetProgramID(pubkey ag_solanago.PublicKey) {
+func SetProgramID(pubkey ag_solanago.PublicKey) error {
 	ProgramID = pubkey
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "ComputeBudget"
 
 func init() {
 	if !ProgramID.IsZero() {
-		ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+		ag_solanago.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 	}
 }
 
@@ -57,6 +57,9 @@ const (
 	// Set a compute unit price in "micro-lamports" to pay a higher transaction
 	// fee for higher transaction prioritization.
 	Instruction_SetComputeUnitPrice
+
+	// Set a specific transaction-wide account data size limit, in bytes, is allowed to load.
+	Instruction_SetLoadedAccountsDataSizeLimit
 )
 
 // InstructionIDToName returns the name of the instruction given its ID.
@@ -70,6 +73,8 @@ func InstructionIDToName(id uint8) string {
 		return "SetComputeUnitLimit"
 	case Instruction_SetComputeUnitPrice:
 		return "SetComputeUnitPrice"
+	case Instruction_SetLoadedAccountsDataSizeLimit:
+		return "SetLoadedAccountsDataSizeLimit"
 	default:
 		return ""
 	}
@@ -101,6 +106,9 @@ var InstructionImplDef = ag_binary.NewVariantDefinition(
 		},
 		{
 			"SetComputeUnitPrice", (*SetComputeUnitPrice)(nil),
+		},
+		{
+			"SetLoadedAccountsDataSizeLimit", (*SetLoadedAccountsDataSizeLimit)(nil),
 		},
 	},
 )
@@ -137,7 +145,7 @@ func (inst Instruction) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	return encoder.Encode(inst.Impl)
 }
 
-func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (interface{}, error) {
+func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (any, error) {
 	inst, err := DecodeInstruction(accounts, data)
 	if err != nil {
 		return nil, err

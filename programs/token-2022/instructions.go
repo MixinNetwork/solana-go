@@ -34,16 +34,16 @@ const MAX_SIGNERS = 11
 
 var ProgramID ag_solanago.PublicKey = ag_solanago.Token2022ProgramID
 
-func SetProgramID(pubkey ag_solanago.PublicKey) {
+func SetProgramID(pubkey ag_solanago.PublicKey) error {
 	ProgramID = pubkey
-	ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+	return ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 }
 
 const ProgramName = "Token2022"
 
 func init() {
 	if !ProgramID.IsZero() {
-		ag_solanago.RegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
+		ag_solanago.MustRegisterInstructionDecoder(ProgramID, registryDecodeInstruction)
 	}
 }
 
@@ -324,7 +324,7 @@ func (inst Instruction) MarshalWithEncoder(encoder *ag_binary.Encoder) error {
 	return encoder.Encode(inst.Impl)
 }
 
-func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (interface{}, error) {
+func registryDecodeInstruction(accounts []*ag_solanago.AccountMeta, data []byte) (any, error) {
 	inst, err := DecodeInstruction(accounts, data)
 	if err != nil {
 		return nil, err

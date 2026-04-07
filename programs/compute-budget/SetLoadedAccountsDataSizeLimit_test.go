@@ -12,31 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rpc
+package computebudget
 
 import (
-	"context"
+	"testing"
 
-	"github.com/gagliardetto/solana-go"
+	"github.com/stretchr/testify/require"
 )
 
-// GetTokenAccountBalance returns the token balance of an SPL Token account.
-func (cl *Client) GetTokenAccountBalance(
-	ctx context.Context,
-	account solana.PublicKey,
-	commitment CommitmentType, // optional
-) (out *GetTokenAccountBalanceResult, err error) {
-	params := []any{account}
-	if commitment != "" {
-		params = append(params,
-			M{"commitment": commitment},
-		)
-	}
-	err = cl.rpcClient.CallForInto(ctx, &out, "getTokenAccountBalance", params)
-	return
-}
+func TestSetLoadedAccountsDataSizeLimitInstruction(t *testing.T) {
+	ix, err := NewSetLoadedAccountsDataSizeLimitInstruction(32 * 1024).ValidateAndBuild()
+	require.Nil(t, err)
 
-type GetTokenAccountBalanceResult struct {
-	RPCContext
-	Value *UiTokenAmount `json:"value"`
+	require.Equal(t, ProgramID, ix.ProgramID())
+	require.Equal(t, 0, len(ix.Accounts()))
+
+	data, err := ix.Data()
+	require.Nil(t, err)
+	require.Equal(t, []byte{0x4, 0x0, 0x80, 0x0, 0x0}, data)
 }
