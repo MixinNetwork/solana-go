@@ -7,6 +7,7 @@ require (
 	github.com/gagliardetto/gofuzz v1.2.2
 	github.com/gagliardetto/treeout v0.1.4
 	github.com/google/uuid v1.6.0
+	github.com/mr-tron/base58 v1.2.0
 )
 
 require (
@@ -68,7 +69,6 @@ require (
 	github.com/klauspost/compress v1.18.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mostynb/zstdpool-freelist v0.0.0-20201229113212-927304c0c3b1
-	github.com/mr-tron/base58 v1.2.0
 	github.com/onsi/gomega v1.10.1
 	github.com/pkg/errors v0.9.1
 	github.com/ryanuber/columnize v2.1.2+incompatible
