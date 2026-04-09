@@ -3,7 +3,6 @@ package base58
 import (
 	"encoding/binary"
 	"errors"
-	"math/bits"
 )
 
 var (
@@ -93,33 +92,23 @@ func Decode64(encoded string, dst *[64]byte) error {
 			uint64(raw[5*i+4])
 	}
 
-	// For 64-byte decode, accumulation can overflow u64.
-	// Use 96-bit (hi:lo) arithmetic.
+	// Plain uint64 accumulation — each product is ≤ 2^62 and the sum
+	// of 18 terms stays under 2^64 (verified by Firedancer analysis).
 	var bin [binarySz64]uint64
-	var binHi [binarySz64]uint64
-	for i := range intermediateSz64 {
-		for k := range binarySz64 {
-			hi, lo := bits.Mul64(intermediate[i], uint64(decTable64[i][k]))
-			newLo, carry := bits.Add64(bin[k], lo, 0)
-			bin[k] = newLo
-			binHi[k] += hi + carry
+	for k := range binarySz64 {
+		var acc uint64
+		for i := range intermediateSz64 {
+			acc += intermediate[i] * uint64(decTable64[i][k])
 		}
+		bin[k] = acc
 	}
 
-	// Carry propagation: each bin[k] should reduce to 32 bits.
-	// Carry is (binHi[k] : bin[k]) >> 32.
 	for i := binarySz64 - 1; i >= 1; i-- {
-		carryHi := binHi[i]
-		carryLo := bin[i] >> 32
+		bin[i-1] += bin[i] >> 32
 		bin[i] &= 0xFFFFFFFF
-		// Add (carryHi:carryLo) shifted: carry = carryHi<<32 | carryLo
-		// But carryHi could make this > 64 bits. Add to bin[i-1] and binHi[i-1].
-		newLo, c := bits.Add64(bin[i-1], carryLo, 0)
-		bin[i-1] = newLo
-		binHi[i-1] += carryHi + c
 	}
 
-	if binHi[0] > 0 || bin[0] > 0xFFFFFFFF {
+	if bin[0] > 0xFFFFFFFF {
 		return ErrValueTooLarge
 	}
 
