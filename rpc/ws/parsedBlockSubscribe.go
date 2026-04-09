@@ -98,7 +98,10 @@ func (sw *ParsedBlockSubscription) Recv(ctx context.Context) (*ParsedBlockResult
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case d := <-sw.sub.stream:
+	case d, ok := <-sw.sub.stream:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return d.(*ParsedBlockResult), nil
 	case err := <-sw.sub.err:
 		return nil, err
@@ -107,19 +110,6 @@ func (sw *ParsedBlockSubscription) Recv(ctx context.Context) (*ParsedBlockResult
 
 func (sw *ParsedBlockSubscription) Err() <-chan error {
 	return sw.sub.err
-}
-
-func (sw *ParsedBlockSubscription) Response() <-chan *ParsedBlockResult {
-	typedChan := make(chan *ParsedBlockResult, 1)
-	go func(ch chan *ParsedBlockResult) {
-		// TODO: will this subscription yield more than one result?
-		d, ok := <-sw.sub.stream
-		if !ok {
-			return
-		}
-		ch <- d.(*ParsedBlockResult)
-	}(typedChan)
-	return typedChan
 }
 
 func (sw *ParsedBlockSubscription) Unsubscribe() {
