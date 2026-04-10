@@ -253,7 +253,7 @@ func NewTransaction(instructions []Instruction, recentBlockHash Hash, opts ...Tr
 			}
 		}
 		if !found {
-			return nil, fmt.Errorf("cannot determine fee payer. You can ether pass the fee payer via the 'TransactionWithInstructions' option parameter or it falls back to the first instruction's first signer")
+			return nil, fmt.Errorf("cannot determine fee payer. You can either pass the fee payer via the 'TransactionWithInstructions' option parameter or it falls back to the first instruction's first signer")
 		}
 	}
 
@@ -539,15 +539,12 @@ func (tx *Transaction) UnmarshalWithDecoder(decoder *bin.Decoder) (err error) {
 		if err != nil {
 			return fmt.Errorf("unable to read numSignatures: %w", err)
 		}
-		if numSignatures < 0 {
-			return fmt.Errorf("numSignatures is negative")
-		}
 		if numSignatures > decoder.Remaining()/64 {
 			return fmt.Errorf("numSignatures %d is too large for remaining bytes %d", numSignatures, decoder.Remaining())
 		}
 
 		tx.Signatures = make([]Signature, numSignatures)
-		for i := 0; i < numSignatures; i++ {
+		for i := range numSignatures {
 			_, err := decoder.Read(tx.Signatures[i][:])
 			if err != nil {
 				return fmt.Errorf("unable to read tx.Signatures[%d]: %w", i, err)
@@ -666,7 +663,6 @@ func (tx *Transaction) EncodeToTree(parent treeout.Branches) {
 						message.Child(spew.Sdump(decodedInstruction))
 					}
 				} else {
-					// TODO: log error?
 					message.Child(fmt.Sprintf(text.RedBG("cannot decode instruction for %s program: %s"), progKey, err)).
 						Child(text.IndigoBG("Program") + ": " + text.Bold("<unknown>") + " " + text.ColorizeBG(progKey.String())).
 						//
@@ -796,10 +792,10 @@ func countWriteableAccounts(tx *Transaction) (count int) {
 		}
 		return count
 	}
-	numStatisKeys := len(tx.Message.AccountKeys)
-	statisKeys := tx.Message.AccountKeys
+	numStaticKeys := len(tx.Message.AccountKeys)
+	staticKeys := tx.Message.AccountKeys
 	h := tx.Message.Header
-	for _, key := range statisKeys {
+	for _, key := range staticKeys {
 		accIndex, ok := getStaticAccountIndex(tx, key)
 		if !ok {
 			continue
@@ -807,10 +803,11 @@ func countWriteableAccounts(tx *Transaction) (count int) {
 		index := int(accIndex)
 		is := false
 		if index >= int(h.NumRequiredSignatures) {
-			// unsignedAccountIndex < numWritableUnsignedAccounts
-			is = index-int(h.NumRequiredSignatures) < (numStatisKeys-int(h.NumRequiredSignatures))-int(h.NumReadonlyUnsignedAccounts)
+			// Use int arithmetic to avoid underflow (Rust uses saturating_sub here).
+			numWritableUnsigned := max(numStaticKeys-int(h.NumRequiredSignatures)-int(h.NumReadonlyUnsignedAccounts), 0)
+			is = index-int(h.NumRequiredSignatures) < numWritableUnsigned
 		} else {
-			is = index < int(h.NumRequiredSignatures-h.NumReadonlySignedAccounts)
+			is = index < max(int(h.NumRequiredSignatures)-int(h.NumReadonlySignedAccounts), 0)
 		}
 		if is {
 			count++

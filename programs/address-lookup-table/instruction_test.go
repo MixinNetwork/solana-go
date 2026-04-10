@@ -87,7 +87,7 @@ func TestEncodingInstruction(t *testing.T) {
 }
 
 func TestEncodeExtendLookupTable(t *testing.T) {
-	addr1 := solana.MustPublicKeyFromBase58("11111111111111111111111111111111")
+	addr1 := solana.SystemProgramID
 	addr2 := solana.MustPublicKeyFromBase58("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA")
 
 	lookupTable := solana.NewWallet().PublicKey()
