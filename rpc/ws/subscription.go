@@ -28,7 +28,7 @@ type Subscription struct {
 	stream            chan result
 	err               chan error
 	closeFunc         func(err error)
-	mutex             sync.Mutex
+	mu                sync.Mutex
 	closed            bool
 	unsubscribeMethod string
 	decoderFunc       decoderFunc
@@ -45,8 +45,8 @@ func newSubscription(
 	return &Subscription{
 		req:               req,
 		subID:             0,
-		stream:            make(chan result, 200_000),
-		err:               make(chan error, 100_000),
+		stream:            make(chan result, 200),
+		err:               make(chan error, 1),
 		closeFunc:         closeFunc,
 		unsubscribeMethod: unsubscribeMethod,
 		decoderFunc:       decoderFunc,
@@ -57,22 +57,19 @@ func (s *Subscription) Recv(ctx context.Context) (any, error) {
 	select {
 	case <-ctx.Done():
 		return nil, ctx.Err()
-	case d := <-s.stream:
+	case d, ok := <-s.stream:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return d, nil
-	case err := <-s.err:
+	case err, ok := <-s.err:
+		if !ok {
+			return nil, ErrSubscriptionClosed
+		}
 		return nil, err
 	}
 }
 
 func (s *Subscription) Unsubscribe() {
-	s.unsubscribe(nil)
-}
-
-func (s *Subscription) unsubscribe(err error) {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-	s.closeFunc(err)
-	s.closed = true
-	close(s.stream)
-	close(s.err)
+	s.closeFunc(ErrSubscriptionClosed)
 }
