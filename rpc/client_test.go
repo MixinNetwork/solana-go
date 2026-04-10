@@ -73,7 +73,7 @@ func TestClient_GetAccountInfo(t *testing.T) {
 			},
 			Value: &Account{
 				Lamports: 999999,
-				Owner:    solana.MustPublicKeyFromBase58("11111111111111111111111111111111"),
+				Owner:    solana.SystemProgramID,
 				Data: &DataBytesOrJSON{
 					rawDataEncoding: solana.EncodingBase64,
 					asDecodedBinary: solana.Data{
@@ -1444,7 +1444,7 @@ func TestClient_GetMultipleAccounts(t *testing.T) {
 		Value: []*Account{
 			{
 				Lamports: 19039980000,
-				Owner:    solana.MustPublicKeyFromBase58("11111111111111111111111111111111"),
+				Owner:    solana.SystemProgramID,
 				Data: &DataBytesOrJSON{
 					asDecodedBinary: solana.Data{
 						Content:  []byte{},
@@ -2648,7 +2648,163 @@ func TestClient_IsBlockhashValid(t *testing.T) {
 }
 
 func TestClient_SimulateTransaction(t *testing.T) {
-	// TODO
+	responseBody := `{"context":{"slot":218},"value":{"accounts":null,"logs":["Program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri invoke [1]","Program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri consumed 2366 of 1400000 compute units","Program return: 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri KgAAAAAAAAA=","Program 83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri success"],"unitsConsumed":2366}}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+	client := New(server.URL)
+
+	txData := []byte{1, 2, 3, 4} // dummy transaction data
+	out, err := client.SimulateRawTransactionWithOpts(
+		context.Background(),
+		txData,
+		nil,
+	)
+	require.NoError(t, err)
+
+	assert.Nil(t, out.Value.Err)
+	assert.Len(t, out.Value.Logs, 4)
+	assert.Equal(t, uint64(2366), *out.Value.UnitsConsumed)
+
+	reqBody := server.RequestBody(t)
+	assert.NotNil(t, reqBody["id"])
+	reqBody["id"] = any(nil)
+
+	assert.Equal(t,
+		map[string]any{
+			"id":      any(nil),
+			"jsonrpc": "2.0",
+			"method":  "simulateTransaction",
+			"params": []any{
+				base64.StdEncoding.EncodeToString(txData),
+				map[string]any{
+					"encoding": "base64",
+				},
+			},
+		},
+		reqBody,
+	)
+
+	expected := mustJSONToInterface([]byte(responseBody))
+	got := mustJSONToInterface(mustAnyToJSON(out))
+	assert.Equal(t, expected, got, "both deserialized values must be equal")
+}
+
+func TestClient_SimulateTransactionWithOpts_AllOptions(t *testing.T) {
+	responseBody := `{"context":{"slot":218},"value":{"err":null,"logs":["Program log: hello"],"accounts":null,"unitsConsumed":1000}}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+	client := New(server.URL)
+
+	txData := []byte{1, 2, 3, 4}
+	minContextSlot := uint64(100)
+	out, err := client.SimulateRawTransactionWithOpts(
+		context.Background(),
+		txData,
+		&SimulateTransactionOpts{
+			SigVerify:              true,
+			Commitment:             CommitmentProcessed,
+			ReplaceRecentBlockhash: true,
+			InnerInstructions:      true,
+			MinContextSlot:         &minContextSlot,
+			Accounts: &SimulateTransactionAccountsOpts{
+				Encoding:  solana.EncodingBase64,
+				Addresses: []solana.PublicKey{solana.MustPublicKeyFromBase58("7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932")},
+			},
+		},
+	)
+	require.NoError(t, err)
+	assert.NotNil(t, out)
+
+	reqBody := server.RequestBody(t)
+	reqBody["id"] = any(nil)
+
+	assert.Equal(t,
+		map[string]any{
+			"id":      any(nil),
+			"jsonrpc": "2.0",
+			"method":  "simulateTransaction",
+			"params": []any{
+				base64.StdEncoding.EncodeToString(txData),
+				map[string]any{
+					"encoding":              "base64",
+					"sigVerify":             true,
+					"commitment":            string(CommitmentProcessed),
+					"replaceRecentBlockhash": true,
+					"innerInstructions":     true,
+					"minContextSlot":        float64(100),
+					"accounts": map[string]any{
+						"encoding":  string(solana.EncodingBase64),
+						"addresses": []any{"7xLk17EQQ5KLDLDe44wCmupJKJjTGd8hs3eSVVhCx932"},
+					},
+				},
+			},
+		},
+		reqBody,
+	)
+}
+
+func TestClient_SimulateTransaction_InnerInstructions(t *testing.T) {
+	responseBody := `{"context":{"slot":300},"value":{"logs":["Program log: invoke"],"accounts":null,"unitsConsumed":5000,"innerInstructions":[{"index":0,"instructions":[{"programIdIndex":2,"accounts":[0,1],"data":"3Bxs4ThwQbE4vyj5","stackHeight":2}]}],"returnData":{"programId":"83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri","data":["KgAAAAAAAAA=","base64"]}}}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+	client := New(server.URL)
+
+	txData := []byte{1, 2, 3, 4}
+	out, err := client.SimulateRawTransactionWithOpts(
+		context.Background(),
+		txData,
+		&SimulateTransactionOpts{
+			InnerInstructions: true,
+		},
+	)
+	require.NoError(t, err)
+
+	require.Len(t, out.Value.InnerInstructions, 1)
+	assert.Equal(t, uint16(0), out.Value.InnerInstructions[0].Index)
+	require.Len(t, out.Value.InnerInstructions[0].Instructions, 1)
+	assert.Equal(t, uint16(2), out.Value.InnerInstructions[0].Instructions[0].ProgramIDIndex)
+	assert.Equal(t, []uint16{0, 1}, out.Value.InnerInstructions[0].Instructions[0].Accounts)
+	assert.Equal(t, uint16(2), out.Value.InnerInstructions[0].Instructions[0].StackHeight)
+
+	require.NotNil(t, out.Value.ReturnData)
+	assert.Equal(t, solana.MustPublicKeyFromBase58("83astBRguLMdt2h5U1Tpdq5tjFoJ6noeGwaY3mDLVcri"), out.Value.ReturnData.ProgramId)
+
+	expected := mustJSONToInterface([]byte(responseBody))
+	got := mustJSONToInterface(mustAnyToJSON(out))
+	assert.Equal(t, expected, got, "both deserialized values must be equal")
+}
+
+func TestClient_SimulateTransaction_FullResult(t *testing.T) {
+	responseBody := `{"context":{"slot":400},"value":{"logs":["Program log: ok"],"accounts":null,"unitsConsumed":3000,"loadedAccountsDataSize":1024,"fee":5000,"preBalances":[10000000,0],"postBalances":[9995000,0],"loadedAddresses":{"readonly":["11111111111111111111111111111111"],"writable":[]},"replacementBlockhash":{"blockhash":"EETubP5AKHgjPAhzPkToc6S4eibc4FFqQGnHR1Sh9rAr","lastValidBlockHeight":500}}}`
+	server, closer := mockJSONRPC(t, stdjson.RawMessage(wrapIntoRPC(responseBody)))
+	defer closer()
+	client := New(server.URL)
+
+	txData := []byte{1, 2, 3, 4}
+	out, err := client.SimulateRawTransactionWithOpts(
+		context.Background(),
+		txData,
+		&SimulateTransactionOpts{
+			ReplaceRecentBlockhash: true,
+			InnerInstructions:      true,
+		},
+	)
+	require.NoError(t, err)
+
+	assert.Nil(t, out.Value.Err)
+	assert.Equal(t, uint64(3000), *out.Value.UnitsConsumed)
+	assert.Equal(t, uint32(1024), *out.Value.LoadedAccountsDataSize)
+	assert.Equal(t, uint64(5000), *out.Value.Fee)
+	assert.Equal(t, []uint64{10000000, 0}, out.Value.PreBalances)
+	assert.Equal(t, []uint64{9995000, 0}, out.Value.PostBalances)
+	require.NotNil(t, out.Value.ReplacementBlockhash)
+	assert.Equal(t, uint64(500), out.Value.ReplacementBlockhash.LastValidBlockHeight)
+	require.NotNil(t, out.Value.LoadedAddresses)
+	assert.Len(t, out.Value.LoadedAddresses.ReadOnly, 1)
+
+	expected := mustJSONToInterface([]byte(responseBody))
+	got := mustJSONToInterface(mustAnyToJSON(out))
+	assert.Equal(t, expected, got, "both deserialized values must be equal")
 }
 
 func TestClient_GetFeeForMessage(t *testing.T) {

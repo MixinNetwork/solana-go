@@ -99,19 +99,6 @@ func (sw *SlotsUpdatesSubscription) Err() <-chan error {
 	return sw.sub.err
 }
 
-func (sw *SlotsUpdatesSubscription) Response() <-chan *SlotsUpdatesResult {
-	typedChan := make(chan *SlotsUpdatesResult, 1)
-	go func(ch chan *SlotsUpdatesResult) {
-		// TODO: will this subscription yield more than one result?
-		d, ok := <-sw.sub.stream
-		if !ok {
-			return
-		}
-		ch <- d.(*SlotsUpdatesResult)
-	}(typedChan)
-	return typedChan
-}
-
 func (sw *SlotsUpdatesSubscription) Unsubscribe() {
 	sw.sub.Unsubscribe()
 }

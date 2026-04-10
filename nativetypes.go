@@ -24,8 +24,9 @@ import (
 	"io"
 
 	bin "github.com/gagliardetto/binary"
+	"github.com/gagliardetto/solana-go/base58"
 	"github.com/mostynb/zstdpool-freelist"
-	"github.com/mr-tron/base58"
+	mrtronbase58 "github.com/mr-tron/base58"
 )
 
 type Padding []byte
@@ -54,8 +55,8 @@ func HashFromBytes(in []byte) Hash {
 
 // MarshalText implements encoding.TextMarshaler.
 func (ha Hash) MarshalText() ([]byte, error) {
-	s := base58.Encode(ha[:])
-	return []byte(s), nil
+	buf := make([]byte, 0, base58.EncodedMaxLen32)
+	return base58.AppendEncode32(buf, (*[32]byte)(&ha)), nil
 }
 
 // UnmarshalText implements encoding.TextUnmarshaler.
@@ -69,7 +70,11 @@ func (ha *Hash) UnmarshalText(data []byte) (err error) {
 }
 
 func (ha Hash) MarshalJSON() ([]byte, error) {
-	return json.Marshal(base58.Encode(ha[:]))
+	buf := make([]byte, 0, base58.EncodedMaxLen32+2)
+	buf = append(buf, '"')
+	buf = base58.AppendEncode32(buf, (*[32]byte)(&ha))
+	buf = append(buf, '"')
+	return buf, nil
 }
 
 func (ha *Hash) UnmarshalJSON(data []byte) (err error) {
@@ -97,7 +102,7 @@ func (ha Hash) IsZero() bool {
 }
 
 func (ha Hash) String() string {
-	return base58.Encode(ha[:])
+	return base58.Encode32((*[32]byte)(&ha))
 }
 
 type Signature [64]byte
@@ -114,16 +119,9 @@ func (sig Signature) Equals(pb Signature) bool {
 
 // SignatureFromBase58 decodes a base58 string into a Signature.
 func SignatureFromBase58(in string) (out Signature, err error) {
-	val, err := base58.Decode(in)
-	if err != nil {
-		return
+	if err = base58.Decode64(in, (*[64]byte)(&out)); err != nil {
+		return out, fmt.Errorf("decode: %w", err)
 	}
-
-	if len(val) != SignatureLength {
-		err = fmt.Errorf("invalid length, expected 64, got %d", len(val))
-		return
-	}
-	copy(out[:], val)
 	return
 }
 
@@ -154,8 +152,8 @@ func SignatureFromBytes(in []byte) (out Signature) {
 }
 
 func (p Signature) MarshalText() ([]byte, error) {
-	s := base58.Encode(p[:])
-	return []byte(s), nil
+	buf := make([]byte, 0, base58.EncodedMaxLen64)
+	return base58.AppendEncode64(buf, (*[64]byte)(&p)), nil
 }
 
 func (p *Signature) UnmarshalText(data []byte) (err error) {
@@ -168,7 +166,11 @@ func (p *Signature) UnmarshalText(data []byte) (err error) {
 }
 
 func (p Signature) MarshalJSON() ([]byte, error) {
-	return json.Marshal(base58.Encode(p[:]))
+	buf := make([]byte, 0, base58.EncodedMaxLen64+2)
+	buf = append(buf, '"')
+	buf = base58.AppendEncode64(buf, (*[64]byte)(&p))
+	buf = append(buf, '"')
+	return buf, nil
 }
 
 func (p *Signature) UnmarshalJSON(data []byte) (err error) {
@@ -178,18 +180,7 @@ func (p *Signature) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 
-	dat, err := base58.Decode(s)
-	if err != nil {
-		return err
-	}
-
-	if len(dat) != SignatureLength {
-		return fmt.Errorf("invalid length for Signature, expected 64, got %d", len(dat))
-	}
-
-	target := Signature{}
-	copy(target[:], dat)
-	*p = target
+	*p, err = SignatureFromBase58(s)
 	return
 }
 
@@ -199,7 +190,7 @@ func (s Signature) Verify(pubkey PublicKey, msg []byte) bool {
 }
 
 func (p Signature) String() string {
-	return base58.Encode(p[:])
+	return base58.Encode64((*[64]byte)(&p))
 }
 
 type Base64 []byte
@@ -227,7 +218,7 @@ func (t *Base64) UnmarshalJSON(data []byte) (err error) {
 type Base58 []byte
 
 func (t Base58) MarshalJSON() ([]byte, error) {
-	return json.Marshal(base58.Encode(t))
+	return json.Marshal(mrtronbase58.Encode(t))
 }
 
 func (t *Base58) UnmarshalJSON(data []byte) (err error) {
@@ -242,12 +233,12 @@ func (t *Base58) UnmarshalJSON(data []byte) (err error) {
 		return nil
 	}
 
-	*t, err = base58.Decode(s)
+	*t, err = mrtronbase58.Decode(s)
 	return
 }
 
 func (t Base58) String() string {
-	return base58.Encode(t)
+	return mrtronbase58.Encode(t)
 }
 
 type Data struct {
@@ -287,7 +278,7 @@ func (t *Data) UnmarshalJSON(data []byte) (err error) {
 	switch t.Encoding {
 	case EncodingBase58:
 		var err error
-		t.Content, err = base58.Decode(contentString)
+		t.Content, err = mrtronbase58.Decode(contentString)
 		if err != nil {
 			return err
 		}
@@ -323,7 +314,7 @@ var zstdEncoderPool = zstdpool.NewEncoderPool()
 func (t Data) String() string {
 	switch EncodingType(t.Encoding) {
 	case EncodingBase58:
-		return base58.Encode(t.Content)
+		return mrtronbase58.Encode(t.Content)
 	case EncodingBase64:
 		return base64.StdEncoding.EncodeToString(t.Content)
 	case EncodingBase64Zstd:

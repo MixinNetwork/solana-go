@@ -30,7 +30,8 @@ import (
 	"sort"
 
 	"filippo.io/edwards25519"
-	"github.com/mr-tron/base58"
+	"github.com/gagliardetto/solana-go/base58"
+	mrtronbase58 "github.com/mr-tron/base58"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/bsontype"
 )
@@ -57,7 +58,7 @@ func MustPrivateKeyFromBase58(in string) PrivateKey {
 }
 
 func PrivateKeyFromBase58(privkey string) (PrivateKey, error) {
-	res, err := base58.Decode(privkey)
+	res, err := mrtronbase58.Decode(privkey)
 	if err != nil {
 		return nil, err
 	}
@@ -106,7 +107,7 @@ func PrivateKeyFromSolanaKeygenFileBytes(content []byte) (PrivateKey, error) {
 }
 
 func (k PrivateKey) String() string {
-	return base58.Encode(k)
+	return mrtronbase58.Encode(k)
 }
 
 func NewRandomPrivateKey() (PrivateKey, error) {
@@ -188,21 +189,24 @@ func MustPublicKeyFromBase58(in string) PublicKey {
 // PublicKeyFromBase58 creates a PublicKey from a base58 encoded string.
 // NOTE: it will accept on- and off-curve pubkeys.
 func PublicKeyFromBase58(in string) (out PublicKey, err error) {
-	val, err := base58.Decode(in)
-	if err != nil {
+	if err = base58.Decode32(in, (*[32]byte)(&out)); err != nil {
+		// Fall back to the variable-length decoder to produce a more
+		// informative error when the input decodes to a wrong-length value.
+		val, decErr := mrtronbase58.Decode(in)
+		if decErr != nil {
+			return out, fmt.Errorf("decode: %w", decErr)
+		}
+		if len(val) != PublicKeyLength {
+			return out, fmt.Errorf("invalid length, expected %v, got %d", PublicKeyLength, len(val))
+		}
 		return out, fmt.Errorf("decode: %w", err)
 	}
-
-	if len(val) != PublicKeyLength {
-		return out, fmt.Errorf("invalid length, expected %v, got %d", PublicKeyLength, len(val))
-	}
-
-	copy(out[:], val)
 	return
 }
 
 func (p PublicKey) MarshalText() ([]byte, error) {
-	return []byte(base58.Encode(p[:])), nil
+	buf := make([]byte, 0, base58.EncodedMaxLen32)
+	return base58.AppendEncode32(buf, (*[32]byte)(&p)), nil
 }
 
 func (p *PublicKey) UnmarshalText(data []byte) error {
@@ -210,7 +214,13 @@ func (p *PublicKey) UnmarshalText(data []byte) error {
 }
 
 func (p PublicKey) MarshalJSON() ([]byte, error) {
-	return json.Marshal(base58.Encode(p[:]))
+	// Write directly into a JSON-quoted buffer. Base58 characters are all ASCII
+	// and never contain JSON-escape characters, so we can skip json.Marshal.
+	buf := make([]byte, 0, base58.EncodedMaxLen32+2)
+	buf = append(buf, '"')
+	buf = base58.AppendEncode32(buf, (*[32]byte)(&p))
+	buf = append(buf, '"')
+	return buf, nil
 }
 
 func (p *PublicKey) UnmarshalJSON(data []byte) (err error) {
@@ -309,7 +319,7 @@ func (p *PublicKey) Set(s string) (err error) {
 }
 
 func (p PublicKey) String() string {
-	return base58.Encode(p[:])
+	return base58.Encode32((*[32]byte)(&p))
 }
 
 // Short returns a shortened pubkey string,
@@ -698,23 +708,24 @@ func FindAssociatedTokenAddress(
 	wallet PublicKey,
 	mint PublicKey,
 ) (PublicKey, uint8, error) {
-	return findAssociatedTokenAddressAndBumpSeed(
+	return FindAssociatedTokenAddressWithProgram(
 		wallet,
 		mint,
 		TokenProgramID,
-		SPLAssociatedTokenAccountProgramID,
 	)
 }
 
-func FindAssociatedTokenAddressWithTokenProgramID(
+// FindAssociatedTokenAddressWithProgram returns the associated token account PDA
+// for the provided wallet, mint, and token program.
+func FindAssociatedTokenAddressWithProgram(
 	wallet PublicKey,
 	mint PublicKey,
-	tokenProgramID PublicKey,
+	tokenProgram PublicKey,
 ) (PublicKey, uint8, error) {
 	return findAssociatedTokenAddressAndBumpSeed(
 		wallet,
 		mint,
-		tokenProgramID,
+		tokenProgram,
 		SPLAssociatedTokenAccountProgramID,
 	)
 }
@@ -722,12 +733,12 @@ func FindAssociatedTokenAddressWithTokenProgramID(
 func findAssociatedTokenAddressAndBumpSeed(
 	walletAddress PublicKey,
 	splTokenMintAddress PublicKey,
-	tokenProgramID PublicKey,
+	tokenProgram PublicKey,
 	programID PublicKey,
 ) (PublicKey, uint8, error) {
 	return FindProgramAddress([][]byte{
 		walletAddress[:],
-		tokenProgramID[:],
+		tokenProgram[:],
 		splTokenMintAddress[:],
 	},
 		programID,

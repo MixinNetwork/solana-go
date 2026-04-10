@@ -12,31 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package rpc
 
 import (
 	"context"
-
-	"github.com/davecgh/go-spew/spew"
-	"github.com/gagliardetto/solana-go"
-	"github.com/gagliardetto/solana-go/rpc"
 )
 
-func main() {
-	endpoint := rpc.TestNet_RPC
-	client := rpc.New(endpoint)
-
-	pubKey := solana.MustPublicKeyFromBase58("AfkALUPjQp8R1rUwE6KhT38NuTYWCncwwHwcJu7UtAfV")
-	out, err := client.GetTokenAccountsByDelegate(
-		context.TODO(),
-		pubKey,
-		&rpc.GetTokenAccountsConfig{
-			Mint: solana.WrappedSol.ToPointer(),
-		},
-		nil,
-	)
-	if err != nil {
-		panic(err)
+// GetStakeMinimumDelegation returns the stake minimum delegation, in lamports.
+func (cl *Client) GetStakeMinimumDelegation(
+	ctx context.Context,
+	commitment CommitmentType, // optional
+) (out *GetStakeMinimumDelegationResult, err error) {
+	params := []interface{}{}
+	if commitment != "" {
+		params = append(params, M{"commitment": string(commitment)})
 	}
-	spew.Dump(out)
+	err = cl.rpcClient.CallForInto(ctx, &out, "getStakeMinimumDelegation", params)
+	return
 }

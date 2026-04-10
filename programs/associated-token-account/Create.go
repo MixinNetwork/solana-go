@@ -52,7 +52,9 @@ type Create struct {
 
 // NewCreateInstructionBuilder creates a new `Create` instruction builder.
 func NewCreateInstructionBuilder() *Create {
-	nd := &Create{}
+	nd := &Create{
+		TokenProgram: solana.TokenProgramID,
+	}
 	return nd
 }
 
@@ -84,15 +86,20 @@ func (inst *Create) SetAccounts(accounts []*solana.AccountMeta) error {
 	inst.Payer = accounts[0].PublicKey
 	inst.Wallet = accounts[2].PublicKey
 	inst.Mint = accounts[3].PublicKey
+	inst.TokenProgram = accounts[5].PublicKey
 	return nil
 }
 
 func (inst Create) Build() *Instruction {
 	// Find the associatedTokenAddress;
-	associatedTokenAddress, _, _ := solana.FindAssociatedTokenAddressWithTokenProgramID(
+	tokenProgram := inst.TokenProgram
+	if tokenProgram.IsZero() {
+		tokenProgram = solana.TokenProgramID
+	}
+	associatedTokenAddress, _, _ := solana.FindAssociatedTokenAddressWithProgram(
 		inst.Wallet,
 		inst.Mint,
-		inst.TokenProgram,
+		tokenProgram,
 	)
 
 	keys := []*solana.AccountMeta{
@@ -122,7 +129,7 @@ func (inst Create) Build() *Instruction {
 			IsWritable: false,
 		},
 		{
-			PublicKey:  inst.TokenProgram,
+			PublicKey:  tokenProgram,
 			IsSigner:   false,
 			IsWritable: false,
 		},
@@ -156,13 +163,14 @@ func (inst *Create) Validate() error {
 	if inst.Mint.IsZero() {
 		return errors.New("mint not set")
 	}
-	if inst.TokenProgram.IsZero() {
-		return errors.New("TokenProgram not set")
+	tokenProgram := inst.TokenProgram
+	if tokenProgram.IsZero() {
+		tokenProgram = solana.TokenProgramID
 	}
-	_, _, err := solana.FindAssociatedTokenAddressWithTokenProgramID(
+	_, _, err := solana.FindAssociatedTokenAddressWithProgram(
 		inst.Wallet,
 		inst.Mint,
-		inst.TokenProgram,
+		tokenProgram,
 	)
 	if err != nil {
 		return fmt.Errorf("error while FindAssociatedTokenAddress: %w", err)
@@ -206,11 +214,12 @@ func NewCreateInstruction(
 	walletAddress solana.PublicKey,
 	splTokenMintAddress solana.PublicKey,
 ) *Create {
-	return NewCreateInstructionBuilder().
-		SetPayer(payer).
-		SetWallet(walletAddress).
-		SetMint(splTokenMintAddress).
-		SetTokenProgram(solana.TokenProgramID)
+	return NewCreateInstructionWithTokenProgram(
+		payer,
+		walletAddress,
+		splTokenMintAddress,
+		solana.TokenProgramID,
+	)
 }
 
 func NewCreateInstructionWithTokenProgram(
